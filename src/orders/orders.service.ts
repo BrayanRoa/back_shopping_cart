@@ -22,18 +22,19 @@ export class OrdersService extends BaseService {
         },
       });
 
-      // Paso 2: Crear relaciones en `pedido_producto` para cada producto en el arreglo
+      const product = await BaseService.prisma.productos.findUnique({
+        where: {
+          id: producto,
+          deleted_at: null
+        }
+      })
+
       await BaseService.prisma.pedidos_productos.create({
         data: {
           cantidad: 1,
           id_pedido: order.id,
           id_producto: producto,
-          total: (await BaseService.prisma.productos.findFirst({
-            where: {
-              id: producto,
-              deleted_at: null
-            }
-          })).precio,
+          total: product.precio,
           comision: 0
         }
       })

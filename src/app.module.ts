@@ -6,9 +6,11 @@ import { ProductsModule } from './products/products.module';
 import { StadeModule } from './stade/stade.module';
 import { OrdersModule } from './orders/orders.module';
 import { ProductOrdersModule } from './product_orders/product_orders.module';
+import { UsersModule } from './users/users.module';
+import { PaymentMethodsModule } from './payment_methods/payment_methods.module';
 
 @Module({
-  imports: [CategoryModule, ProductsModule, StadeModule, OrdersModule, ProductOrdersModule],
+  imports: [CategoryModule, ProductsModule, StadeModule, OrdersModule, ProductOrdersModule, UsersModule, PaymentMethodsModule],
   controllers: [AppController],
   providers: [AppService],
 })

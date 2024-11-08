@@ -14,7 +14,6 @@ export class CategoryController {
 
   @Get()
   findAll() {
-    console.log("HOLA");
     return this.categoryService.findAll();
   }
 
