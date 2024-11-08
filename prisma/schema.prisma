@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model categoria {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre      String      @db.VarChar(100)
+  descripcion String?
+  created_at  DateTime?   @default(now()) @db.Timestamp(6)
+  updated_at  DateTime?   @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime?   @db.Timestamp(6)
+  productos   productos[]
+}
+
+model estado {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre      String    @db.VarChar(50)
+  descripcion String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
+  pedidos     pedidos[]
+}
+
+model pedidos {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  datos_usuario     String              @db.Uuid
+  comentario        String?
+  id_medio_pago     String              @db.Uuid
+  fecha             DateTime?           @default(now()) @db.Timestamp(6)
+  id_estado         String?             @db.Uuid
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?           @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime?           @db.Timestamp(6)
+  user_id           String?             @db.Uuid
+  medio_pago_id     String?             @db.Uuid
+  estado            estado?             @relation(fields: [id_estado], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  medio_de_pago     medio_de_pago?      @relation(fields: [medio_pago_id], references: [id], onUpdate: NoAction)
+  users             users?              @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+  pedidos_productos pedidos_productos[]
+}
+
+model pedidos_productos {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_pedido   String?    @db.Uuid
+  id_producto String?    @db.Uuid
+  cantidad    Int
+  total       Decimal    @db.Decimal(10, 2)
+  comision    Decimal?   @db.Decimal(5, 2)
+  created_at  DateTime?  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime?  @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime?  @db.Timestamp(6)
+  pedidos     pedidos?   @relation(fields: [id_pedido], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  productos   productos? @relation(fields: [id_producto], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model productos {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  precio            Decimal             @db.Decimal(10, 2)
+  cantidad          Int
+  id_business       String              @db.VarChar
+  id_categoria      String?             @db.Uuid
+  imagen            String              @db.Uuid
+  disponible        Boolean?            @default(true)
+  descripcion       String?
+  comision          Decimal?            @db.Decimal(5, 2)
+  created_at        DateTime?           @default(now()) @db.Timestamp(6)
+  updated_at        DateTime?           @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime?           @db.Timestamp(6)
+  pedidos_productos pedidos_productos[]
+  categoria         categoria?          @relation(fields: [id_categoria], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model medio_de_pago {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre      String    @db.VarChar(50)
+  descripcion String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
+  pedidos     pedidos[]
+}
+
+model users {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String    @db.VarChar(100)
+  email      String    @unique @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  deleted_at DateTime? @db.Timestamp(6)
+  pedidos    pedidos[]
+}
