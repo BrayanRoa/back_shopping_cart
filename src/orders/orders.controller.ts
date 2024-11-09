@@ -9,7 +9,7 @@ export class OrdersController {
 
   @Post()
   create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.addProductsToOrder(createOrderDto);
+    return this.ordersService.create()
   }
 
   @Get()

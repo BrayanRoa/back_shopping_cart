@@ -21,16 +21,16 @@ async function main() {
     });
 
     // Insertar datos iniciales en la tabla medio_de_pago
-    const medioPago1 = await prisma.medio_de_pago.create({
+    const medioPago1 = await prisma.medios_pago.create({
         data: {
-            nombre: 'Tarjeta de Crédito',
+            metodo: 'Tarjeta de Crédito',
             descripcion: 'Pago mediante tarjeta de crédito',
         },
     });
 
-    const medioPago2 = await prisma.medio_de_pago.create({
+    const medioPago2 = await prisma.medios_pago.create({
         data: {
-            nombre: 'PayPal',
+            metodo: 'PayPal',
             descripcion: 'Pago mediante PayPal',
         },
     });
@@ -70,17 +70,39 @@ async function main() {
         }
     })
 
-    const producto = await prisma.productos.create({
-        data: {
-            precio: 1000,
-            descripcion: 'Lavadora de 5 kg',
-            id_categoria: categoria.id,
-            cantidad: 10,
-            id_business: "10",
-            imagen: uuidv4(),
-            disponible: true,
-            comision: '10',
-        }
+    const producto = await prisma.productos.createMany({
+        data: [
+            {
+                precio: 1000,
+                descripcion: 'Lavadora de 5 kg',
+                id_categoria: categoria.id,
+                cantidad: 10,
+                id_business: "10",
+                imagen: uuidv4(),
+                disponible: true,
+                comision: '10',
+            },
+            {
+                precio: 2000,
+                descripcion: 'Microondas',
+                id_categoria: categoria.id,
+                cantidad: 5,
+                id_business: "10",
+                imagen: uuidv4(),
+                disponible: true,
+                comision: '15',
+            },
+            {
+                precio: 1500,
+                descripcion: 'Plancha de 10 kg',
+                id_categoria: categoria_dos.id,
+                cantidad: 8,
+                id_business: "10",
+                imagen: uuidv4(),
+                disponible: true,
+                comision: '12',
+            }
+        ]
     })
 
     // Insertar un pedido de ejemplo en la tabla pedidos

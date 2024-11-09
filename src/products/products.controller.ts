@@ -1,20 +1,36 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe, Headers } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
+import { UpdateOrderDto } from 'src/orders/dto/update-order.dto';
 
-@Controller('products')
+@Controller('productos')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @Post()
   create(@Body() createProductDto: CreateProductDto) {
     return this.productsService.create(createProductDto);
   }
 
-  @Get()
-  findAll() {
-    return this.productsService.findAll();
+  @Post("/pedidos/add")
+  productosPedidos(
+    @Body() createOrderDto: CreateOrderDto,
+    @Headers() headers: Record<string, string>,
+  ) {
+    console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
+    return this.productsService.productosPedidos(createOrderDto);
+  }
+
+  @Get("/pedidos/all")
+  findAll(
+    @Query('id') id: string | undefined,
+    @Query('idBusiness') idBusiness: string,
+    @Query('filters') filters: { categoria?: string; precioMin?: number; },
+    @Headers() headers: Record<string, string>,
+  ) {
+    console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
+    return this.productsService.findAll(id, idBusiness, filters);
   }
 
   @Get(':id')
@@ -22,13 +38,22 @@ export class ProductsController {
     return this.productsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  @Patch('/pedidos/update')
+  update(
+    @Query('id') id: string,
+    @Body() updateProductDto: UpdateOrderDto,
+    @Headers() headers: Record<string, string>
+  ) {
+    console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
+    return this.productsService.update(id, updateProductDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  @Delete('/pedidos/delete')
+  remove(
+    @Query('id') id: string | undefined,
+    @Headers() headers: Record<string, string>,
+  ) {
+    console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
+    return this.productsService.remove(id);
   }
 }

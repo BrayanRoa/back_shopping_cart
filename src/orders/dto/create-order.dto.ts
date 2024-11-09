@@ -4,18 +4,18 @@ export class CreateOrderDto {
 
     @IsUUID()
     @IsString()
-    datos_usuario: string
+    DatosUsuario: string
 
     @IsString()
     comentario: string;
 
     @IsUUID()
     @IsString()
-    id_medio_pago: string;
+    idMedioPago: string;
 
     @IsUUID()
     @IsString()
-    id_estado: string;
+    idEstado: string;
 
     @IsNotEmpty()
     @IsUUID()

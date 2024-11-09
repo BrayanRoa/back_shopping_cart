@@ -11,7 +11,7 @@ export class PaymentMethodsService extends BaseService {
 
   findAll() {
     return this.handleErrors(async()=>{
-      return await BaseService.prisma.medio_de_pago.findMany({
+      return await BaseService.prisma.medios_pago.findMany({
         where:{
           deleted_at: null
         }

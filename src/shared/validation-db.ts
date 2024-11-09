@@ -29,6 +29,8 @@ export class ValidationDb {
                     return new CustomResponse(`${errors.meta.cause}`, 404);
                 case 'P2003':
                     return new CustomResponse(`Foreign key constraint failed on field: '${errors.meta.field_name}' in model: '${errors.meta.modelName}'`, 400)
+                case 'P2023':
+                    return new CustomResponse(`the ${errors} was not found`, 404);
                 default:
                     return new CustomResponse(`review this code error ${errors.code}`, 400)
             }
