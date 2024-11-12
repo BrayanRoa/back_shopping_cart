@@ -34,33 +34,73 @@ $ npm install
 
 ## Revisar el documento .txt que tiene el script de la base de datos
 
-crear un archivo .env y copiar la variable DATABASE_URL que esta en el archivo .env.example, esto para poder hacer la conexión con la base de datos
-
 ## Compile and run the project
 
 ```bash
+# inicializar prisma ORM
+$ npx prisma init
+
+# trae los campos de la base de datos al codigo para poder las tablasy manipular la data
+
+$ npx prisma db pull
+
 # generar el cliente para poder hacer las peticiones
 $ npx prisma generate
 
 # ejecutar el siguiente script para cargar automaticamente datos en la base de datos
 $ npm run prisma:seed
 
+si al ejecutar este comando te da algun error puedes ejecutar este otro
+
+$ DATABASE_URL=postgresql://postgres:12345@localhost:5432/postgres npm run prisma:seed
+
 # watch mode
 $ npm run start:dev
 ```
 
-PASOS PARA EJECUTAR EL PROYECTO
+## Prueba de los servicios
 
-Revisar el archivo “base de datos” copiar el script y ejecutarlo en local para tener la base de datos.
+NOTA: recuerda cambiar los ids con los generados en tu base de datos
 
-## INICIALIZAR PRISMA ORM
+# GET ALL - Obtiene todos los pedidos asociados a un idBusiness
 
-npx prisma init
+```
+curl -X GET "http://localhost:8080/productos/pedidos/all?idBusiness=10" -H "Content-Type: application/json" -H "ip: 192.168.1.1" -H "dominio: example.com" -H "usuario: johndoe" -H "proceso: classy.all()"
+```
 
-## COMANDO PARA TRAER LA BASE DE DATOS A CODIGO
+puedes agregar mas query parameters como los siguientes:
 
-npx prisma db pull
+http://localhost:8080/productos/pedidos/all?filters[precio]=2000&id=42a8de81-da3e-430d-a97b-9c750e65787e&idBusiness=10
 
-## generar el cliente para poder hacer las peticiones
+# POST - Servicio para crear un nuevo pedido
 
-npx prisma generate
+```
+curl --location 'http://localhost:8080/productos/pedidos/add' --header 'Content-Type: application/json' --header 'ip: 192.168.1.1' --header 'dominio: example.com' --header 'usuario: johndoe' --header 'proceso: classy.add()' --data '{
+    "producto": "6efc6527-837e-4289-99dc-5174fbb5a8c2",
+    "DatosUsuario": "2349ac48-671b-4591-8edc-137adc68956a",
+    "comentario": "HOLA COMENTARIOS",
+    "idMedioPago": "35bb0bc9-e021-47e6-9085-6e673e3ae99f",
+    "idEstado": "05b0afa2-868c-46fc-83e2-88d631c3fae5",
+    "cantidad":2
+}'
+```
+
+# DELETE
+
+```
+curl -X DELETE "http://localhost:8080/productos/pedidos/delete?id=61a8660a-7a06-4ae5-b96f-6ba7b732b9da" \
+-H "Content-Type: application/json" \
+-H "ip: 192.168.1.1" \
+-H "dominio: example.com" \
+-H "usuario: johndoe" \
+-H "proceso: classy.delete()"
+```
+
+
+# UPDATE
+
+```
+curl -X PATCH "http://localhost:8080/productos/pedidos/update?id=6e8a00f8-9a24-4661-98ee-3751960d349c" -H "Content-Type: application/json" -H "ip: 192.168.1.1" -H "dominio: example.com" -H "usuario: johndoe" -H "proceso: classy.update()" --data '{
+  "comentario": "comentario"
+}'
+```
