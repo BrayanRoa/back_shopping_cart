@@ -8,6 +8,7 @@ async function bootstrap() {
     new ValidationPipe(
       {whitelist:true, forbidNonWhitelisted:true}
     ));
+  app.enableCors();
   await app.listen(8080);
 }
 bootstrap();

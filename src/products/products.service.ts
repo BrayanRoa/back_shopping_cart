@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { BaseService } from 'src/shared/base_service.service';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/orders/dto/update-order.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductsService extends BaseService {
@@ -17,7 +18,22 @@ export class ProductsService extends BaseService {
 
   productosPedidos(createOrderDto: CreateOrderDto) {
     return this.handleErrors(async () => {
-      const { producto, DatosUsuario, comentario, idMedioPago, idEstado } = createOrderDto;
+      const { producto, DatosUsuario, comentario, idMedioPago, idEstado, cantidad = 1 } = createOrderDto;
+
+      const product = await BaseService.prisma.productos.findMany({
+        where: {
+          id: producto,
+          deleted_at: null
+        }
+      })
+
+      if (product.length === 0) {
+        throw new BadRequestException('El producto no existe');
+      }
+
+      if (cantidad > product[0].cantidad) {
+        throw new BadRequestException(`No hay suficientes productos para cubrir la compra, solo hay ${product[0].cantidad} disponbles`);
+      }
 
       // Paso 1: Crear el pedido
       const order = await BaseService.prisma.pedidos.create({
@@ -30,74 +46,142 @@ export class ProductsService extends BaseService {
         },
       });
 
-      const product = await BaseService.prisma.productos.findMany({
-        where: {
-          id: producto,
-          deleted_at: null
-        }
-      })
+      this.updateProduct(product[0].id, { cantidad: product[0].cantidad - cantidad })
 
-      const test = await BaseService.prisma.pedidos_productos.create({
+      await BaseService.prisma.pedidos_productos.create({
         data: {
-          cantidad: 1,
+          cantidad,
           id_pedido: order.id,
           id_producto: producto,
-          total: product[0].precio,
+          total: cantidad * (+product[0]?.precio),
           comision: 0
         }
       })
-
-      console.log({ test });
 
       return 'Products added to order successfully';
     });
   }
 
-  findAll(id: string | undefined, id_business: string, filters: { categoria?: string; precio?: number } = {}) {
+
+  findAll(id: string | undefined, id_business: string | undefined, filters: { categoria?: string; precio?: number } = {}) {
     return this.handleErrors(() => {
 
       return BaseService.prisma.productos.findMany({
         where: {
           deleted_at: null,
-          id_business,
+          ...(id_business && { id_business }),
           ...(filters.categoria && {
             categoria: {
-              nombre: filters.categoria,  // Filtrado en el campo anidado `id_categoria`
+              nombre: filters.categoria,
             },
           }),
           ...(filters.precio && { precio: filters.precio }),
           pedidos_productos: {
             some: {
-              id_pedido: { not: null } // Asegura que el producto esté relacionado con al menos un pedido
+              id_pedido: { not: null },
+              pedidos: { deleted_at: null }  // Filtra para pedidos que no estén eliminados
             }
           }
         },
         include: {
           pedidos_productos: {
             where: {
-              // Si `id` está presente, se agrega como filtro
-              ...(id && { pedidos: { id } }), // Si `id` es proporcionado, lo agregamos al filtro
+              pedidos: { deleted_at: null },  // Filtra pedidos no eliminados en `pedidos_productos`
+              ...(id && { pedidos: { id } }),
             },
             include: {
               pedidos: true,
+            },
+            orderBy: {
+              id_pedido: "asc"
             }
           }
         }
       });
+
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  findOne(id: string) {
+    return this.handleErrors(() => {
+      return BaseService.prisma.pedidos.findUnique({
+        where: {
+          id,
+          deleted_at: null
+        },
+        include: {
+          pedidos_productos: {
+            include: {
+              productos: true,
+            },
+          },
+        },
+      })
+    })
+  }
+
+  updateProduct(id: string, updateProductDto: UpdateProductDto) {
+    return this.handleErrors(async () => {
+      await BaseService.prisma.productos.update({
+        where: {
+          id,
+        },
+        data: updateProductDto,
+      })
+      return 'Product updated successfully';
+    })
   }
 
   update(id: string, updateOrderDto: UpdateOrderDto) {
     return this.handleErrors(async () => {
+
+      if (updateOrderDto.cantidad) {
+        const order = await BaseService.prisma.pedidos_productos.findMany({
+          where: {
+            id_pedido: id
+          },
+          include: {
+            productos: {
+              include: {
+                pedidos_productos: true
+              }
+            }
+          },
+
+        })
+
+        if (updateOrderDto.cantidad > order[0].productos.pedidos_productos[0].cantidad) {
+          const producto = await BaseService.prisma.productos.findMany({
+            where: {
+              id: order[0].id_producto
+            }
+          })
+
+          if (updateOrderDto.cantidad > producto[0].cantidad) {
+            throw new BadRequestException(`No hay suficientes productos para cubrir la compra, solo hay ${producto[0].cantidad} disponbles`);
+          }
+        }
+        await BaseService.prisma.pedidos_productos.update({
+          where: {
+            id: order[0].id,
+          },
+          data: {
+            cantidad: updateOrderDto.cantidad,
+            total: updateOrderDto.cantidad * (+order[0].productos.precio),
+          }
+        })
+      }
+
       await BaseService.prisma.pedidos.update({
         where: {
           id,
         },
-        data: updateOrderDto,
+        data: {
+          comentario: updateOrderDto.comentario,
+          id_medio_pago: updateOrderDto.idMedioPago,
+          id_estado: updateOrderDto.idEstado,
+          id_usuario: updateOrderDto.DatosUsuario
+        },
       })
       return 'Order updated successfully';
     })
@@ -105,15 +189,40 @@ export class ProductsService extends BaseService {
 
   remove(id: string) {
     return this.handleErrors(async () => {
-      await BaseService.prisma.pedidos.update({
+
+      const a = await BaseService.prisma.pedidos.update({
         where: {
           id,
         },
         data: {
           deleted_at: new Date(),
         },
+        include: {
+          pedidos_productos: true,  // Incluir el campo anidado pedidos_productos
+        },
       })
+
+      console.log(a.pedidos_productos[0].id);
+      await BaseService.prisma.pedidos_productos.update({
+        where: {
+          id: a.pedidos_productos[0].id,
+        },
+        data: {
+          deleted_at: new Date(),
+        },
+      })
+
       return "Order deleted successfully"
+    })
+  }
+
+  getAllProducts() {
+    return this.handleErrors(() => {
+      return BaseService.prisma.productos.findMany({
+        where: {
+          deleted_at: null
+        }
+      })
     })
   }
 }

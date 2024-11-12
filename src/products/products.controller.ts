@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe, Headers, HttpCode, HttpStatus } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { CreateOrderDto } from 'src/orders/dto/create-order.dto';
@@ -14,12 +14,21 @@ export class ProductsController {
   }
 
   @Post("/pedidos/add")
+  @HttpCode(HttpStatus.CREATED)
   productosPedidos(
     @Body() createOrderDto: CreateOrderDto,
     @Headers() headers: Record<string, string>,
   ) {
     console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
     return this.productsService.productosPedidos(createOrderDto);
+  }
+
+  @Get("/all")
+  getAllProducts(
+    @Headers() headers: Record<string, string>,
+  ) {
+    console.log(console.log(`IP: ${headers['ip']}, Dominio: ${headers['dominio']}, Usuario: ${headers['usuario']}, Proceso: ${headers['proceso']}`));
+    return this.productsService.getAllProducts()
   }
 
   @Get("/pedidos/all")
@@ -33,9 +42,9 @@ export class ProductsController {
     return this.productsService.findAll(id, idBusiness, filters);
   }
 
-  @Get(':id')
+  @Get('/pedidos/:id')
   findOne(@Param('id') id: string) {
-    return this.productsService.findOne(+id);
+    return this.productsService.findOne(id);
   }
 
   @Patch('/pedidos/update')

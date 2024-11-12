@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class CreateOrderDto {
 
@@ -20,4 +20,8 @@ export class CreateOrderDto {
     @IsNotEmpty()
     @IsUUID()
     producto: string
+
+    @IsNumber()
+    @IsOptional()
+    cantidad:number;
 }
