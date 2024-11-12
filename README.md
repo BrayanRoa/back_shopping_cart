@@ -62,16 +62,6 @@ $ npm run start:dev
 
 NOTA: recuerda cambiar los ids con los generados en tu base de datos
 
-# GET ALL - Obtiene todos los pedidos asociados a un idBusiness
-
-```
-curl -X GET "http://localhost:8080/productos/pedidos/all?idBusiness=10" -H "Content-Type: application/json" -H "ip: 192.168.1.1" -H "dominio: example.com" -H "usuario: johndoe" -H "proceso: classy.all()"
-```
-
-puedes agregar mas query parameters como los siguientes:
-
-http://localhost:8080/productos/pedidos/all?filters[precio]=2000&id=42a8de81-da3e-430d-a97b-9c750e65787e&idBusiness=10
-
 # POST - Servicio para crear un nuevo pedido
 
 ```
@@ -84,6 +74,16 @@ curl --location 'http://localhost:8080/productos/pedidos/add' --header 'Content-
     "cantidad":2
 }'
 ```
+
+# GET ALL - Obtiene todos los pedidos asociados a un idBusiness
+
+```
+curl -X GET "http://localhost:8080/productos/pedidos/all?idBusiness=10" -H "Content-Type: application/json" -H "ip: 192.168.1.1" -H "dominio: example.com" -H "usuario: johndoe" -H "proceso: classy.all()"
+```
+
+puedes agregar mas query parameters como los siguientes:
+
+http://localhost:8080/productos/pedidos/all?filters[precio]=2000&id=42a8de81-da3e-430d-a97b-9c750e65787e&idBusiness=10
 
 # DELETE
 
