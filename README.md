@@ -34,16 +34,11 @@ $ npm install
 
 ## Revisar el documento .txt que tiene el script de la base de datos
 
+crear un archivo .env y copiar la variable DATABASE_URL que esta en el archivo .env.example, esto para poder hacer la conexión con la base de datos
+
 ## Compile and run the project
 
 ```bash
-# inicializar prisma ORM
-$ npx prisma init
-
-# trae los campos de la base de datos al codigo para poder las tablasy manipular la data
-
-$ npx prisma db pull
-
 # generar el cliente para poder hacer las peticiones
 $ npx prisma generate
 
